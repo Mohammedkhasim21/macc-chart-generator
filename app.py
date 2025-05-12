@@ -1,6 +1,6 @@
 import matplotlib
 matplotlib.use('Agg')
-
+from datetime import datetime
 from flask import Flask, request, render_template_string, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -62,7 +62,9 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=get_ist_time)
     last_login = db.Column(db.DateTime, nullable=True)
     remember_token = db.Column(db.String(100), unique=True, nullable=True)
-
+with app.app_context():
+    db.init_app(app)  # Ensure db is initialized with the app
+    db.create_all()   # Create all tables based on models
     def set_password(self, password):
         self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
@@ -80,14 +82,20 @@ with app.app_context():
     # db.create_all()  # Remove or comment out
     if not User.query.filter_by(email='admin@example.com').first():
         admin = User(
-            email='admin@example.com',
-            quota=None,
-            approved=True,
-            created_at=get_ist_time()
-        )
-        admin.set_password('password123')
-        db.session.add(admin)
-        db.session.commit()
+        email='admin@example.com',
+        password='password123',  # Replace with a secure password or hashed password
+        quota=0,                  # Adjust based on your model
+        approved=True,
+        created_at=datetime.utcnow(),
+        last_login=None,
+        remember_token=None
+    )
+    db.session.add(admin)
+    db.session.commit()
+    from flask_bcrypt import Bcrypt
+bcrypt = Bcrypt(app)
+hashed_password = bcrypt.generate_password_hash('your_password').decode('utf-8')
+admin = User(email='admin@example.com', password=hashed_password)
 
 # Templates (unchanged from your original code)
 AUTH_TEMPLATE = """
