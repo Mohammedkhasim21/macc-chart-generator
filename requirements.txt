@@ -14,4 +14,3 @@ flask-bcrypt
 psycopg2-binary
 matplotlib
 numpy
-pip freeze > requirements.txt
