@@ -4,17 +4,16 @@ from datetime import datetime
 from flask import Flask, request, render_template_string, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_bcrypt import Bcrypt
 import matplotlib.pyplot as plt
 import numpy as np
 import io
 import base64
 import random
 import re
-from datetime import datetime
 import secrets
 import os
 import logging
-import bcrypt
 import pytz
 
 # Helper function for IST time
@@ -45,11 +44,11 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_urlsafe(32))
 
 # PostgreSQL configuration
-import os
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+bcrypt = Bcrypt(app)
 
 EMAIL_REGEX = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
@@ -62,9 +61,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=get_ist_time)
     last_login = db.Column(db.DateTime, nullable=True)
     remember_token = db.Column(db.String(100), unique=True, nullable=True)
-with app.app_context():
-    db.init_app(app)  # Ensure db is initialized with the app
-    db.create_all()   # Create all tables based on models
+
     def set_password(self, password):
         self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
@@ -78,26 +75,26 @@ with app.app_context():
     def __repr__(self):
         return f'<User {self.email}>'
 
+# Initialize database and create admin user
 with app.app_context():
-    # db.create_all()  # Remove or comment out
+    # Create tables (handled by Flask-Migrate in production, but keep for local testing)
+    db.create_all()
+    # Create admin user if not exists
     if not User.query.filter_by(email='admin@example.com').first():
         admin = User(
-        email='admin@example.com',
-        password='password123',  # Replace with a secure password or hashed password
-        quota=0,                  # Adjust based on your model
-        approved=True,
-        created_at=datetime.utcnow(),
-        last_login=None,
-        remember_token=None
-    )
-    db.session.add(admin)
-    db.session.commit()
-    from flask_bcrypt import Bcrypt
-bcrypt = Bcrypt(app)
-hashed_password = bcrypt.generate_password_hash('your_password').decode('utf-8')
-admin = User(email='admin@example.com', password=hashed_password)
+            email='admin@example.com',
+            quota=0,
+            approved=True,
+            created_at=get_ist_time(),
+            last_login=None,
+            remember_token=None
+        )
+        admin.set_password('password123')  # Secure password, consider changing
+        db.session.add(admin)
+        db.session.commit()
+        logging.info("Admin user created")
 
-# Templates (unchanged from your original code)
+# Templates (unchanged)
 AUTH_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">

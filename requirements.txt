@@ -7,3 +7,11 @@ matplotlib==3.9.2
 numpy==2.2.2
 gunicorn==23.0.0
 pytz==2025.1
+flask
+flask-sqlalchemy
+flask-migrate
+flask-bcrypt
+psycopg2-binary
+matplotlib
+numpy
+pip freeze > requirements.txt
