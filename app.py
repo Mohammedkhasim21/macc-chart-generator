@@ -47,7 +47,6 @@ app.secret_key = os.environ.get('SECRET_KEY', secrets.token_urlsafe(32))
 # PostgreSQL configuration
 import os
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-app.config['SQLALCHEMY_DATABASE_URI'] = postgresql://macc_pg_u5s7_user:jt51ogHpdytWTd8aEvZNc5EhswiRca2k@dpg-d0g4e23uibrs73f8cbmg-a/macc_pg_u5s7
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
