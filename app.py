@@ -63,11 +63,11 @@ class User(db.Model):
     remember_token = db.Column(db.String(100), unique=True, nullable=True)
 
     def set_password(self, password):
-        self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def check_password(self, password):
         try:
-            return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
+            return bcrypt.check_password_hash(self.password, password)
         except Exception as e:
             logging.error(f"Password check failed for {self.email}: {e}")
             return False
