@@ -83,7 +83,7 @@ with app.app_context():
     if not User.query.filter_by(email='admin@example.com').first():
         admin = User(
             email='admin@example.com',
-            quota=0,
+            quota=None,  # Set to None for unlimited quota
             approved=True,
             created_at=get_ist_time(),
             last_login=None,
