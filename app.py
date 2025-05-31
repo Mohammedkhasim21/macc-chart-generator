@@ -269,8 +269,8 @@ HTML_TEMPLATE = """
       <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 text-center mb-6">Generate Your MACC Chart</h2>
       <form method="POST" class="space-y-4">
         <div>
-          <label for="project_name" class="block text-sm font-medium text-gray-700">Organisation Name</label>
-          <input type="text" name="project_name" id="project_name" placeholder="Enter Organisation Name" required
+          <label for="project_name" class="block text-sm font-medium text-gray-700">Company Name</label>
+          <input type="text" name="project_name" id="project_name" placeholder="Enter Company Name" required
                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3">
         </div>
         <div>
