@@ -269,8 +269,8 @@ HTML_TEMPLATE = """
       <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 text-center mb-6">Generate Your MACC Chart</h2>
       <form method="POST" class="space-y-4">
         <div>
-          <label for="project_name" class="block text-sm font-medium text-gray-700">Company Name</label>
-          <input type="text" name="project_name" id="project_name" placeholder="Enter Company Name" required
+          <label for="project_name" class="block text-sm font-medium text-gray-700">Organisation Name</label>
+          <input type="text" name="project_name" id="project_name" placeholder="Enter Organisation Name" required
                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm p-3">
         </div>
         <div>
@@ -641,7 +641,7 @@ def index():
             x_positions = np.cumsum([0] + widths[:-1])
             colors = ["#" + ''.join(random.choices('0123456789ABCDEF', k=6)) for _ in categories]
 
-            plt.figure(figsize=(20, 25))
+            plt.figure(figsize=(35,35))
             plt.bar(x_positions, values, width=widths, color=colors, edgecolor='black', align='edge')
 
             for x, y, w in zip(x_positions, values, widths):
@@ -669,7 +669,7 @@ def index():
                      ha='center', fontsize=20, color="black")
 
             buf = io.BytesIO()
-            plt.savefig(buf, format="png")
+            plt.savefig(buf, format="jpeg")
             buf.seek(0)
             chart = base64.b64encode(buf.getvalue()).decode("utf-8")
             buf.close()
