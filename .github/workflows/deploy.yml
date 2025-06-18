@@ -33,4 +33,4 @@ jobs:
           # Restart Gunicorn and Nginx
           sudo systemctl restart macc_chart_Generator_flask.service
           sudo systemctl reload nginx
-        EOF
+          EOF
