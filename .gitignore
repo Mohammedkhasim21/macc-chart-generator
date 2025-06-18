@@ -1,6 +1,8 @@
 __pycache__/
 *.pyc
 .env
+.venv/
+notes.txt
 users.db
 migrations/
 *.sqlite3
