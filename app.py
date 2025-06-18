@@ -1,7 +1,6 @@
 import matplotlib
 matplotlib.use('Agg')
 from datetime import datetime
-from datetime import datetime
 from flask import Flask, request, render_template_string, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -102,7 +101,7 @@ AUTH_TEMPLATE = """
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>{{ title }} | MACC--Chart Generator</title>
+  <title>{{ title }} | MACC Chart Generator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @keyframes fadeIn {
@@ -332,7 +331,7 @@ ADMIN_TEMPLATE = """
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Admin Panel | MACC Chart Generator</title>
+  <title>Admin Panel | MACC--Chart Generator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @keyframes fadeIn {
