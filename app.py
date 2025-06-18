@@ -138,9 +138,9 @@ AUTH_TEMPLATE = """
   </style>
 </head>
 <body class="min-h-screen bg-gray-100 flex flex-col">
-  <header class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md">
+  <header class="bg-gradient-to-r from-blue-600 to-red-600 text-white shadow-md">
     <div class="container mx-auto px-4 py-4">
-      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-center">MACC Chart Generator</h1>
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-center">HELLO ADMIN</h1>
     </div>
   </header>
   <main class="flex-grow container mx-auto px-4 py-8">
