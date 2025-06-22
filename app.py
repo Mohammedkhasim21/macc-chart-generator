@@ -266,7 +266,7 @@ HTML_TEMPLATE = """
       UserId: {{ session['user'] }}
     </div>
     <div class="bg-white shadow-lg rounded-xl p-6 fade-in mt-12">
-      <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 text-center mb-6">Generate Your Chart</h2>
+      <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 text-center mb-6">Generate Chart</h2>
       <form method="POST" class="space-y-4">
         <div>
           <label for="project_name" class="block text-sm font-medium text-gray-700">Organisation Name</label>
