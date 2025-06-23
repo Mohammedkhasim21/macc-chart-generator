@@ -370,7 +370,7 @@ ADMIN_TEMPLATE = """
 <body class="min-h-screen bg-gray-100 flex flex-col">
   <header class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md">
     <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
-      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-center sm:text-left">MACC Chart Generator</h1>
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-center sm:text-left">MACC Chart Generator and Calculator</h1>
       <form method="POST" action="{{ url_for('logout') }}" class="mt-2 sm:mt-0">
         <button type="submit" class="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg transition duration-300 hover-scale text-sm">
           Logout
