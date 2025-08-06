@@ -653,7 +653,7 @@ def index():
             plt.ylabel("MACC Values USD/Ton CO2", fontsize=20)
 
             for x, width in zip(x_positions, widths):
-                plt.text(x + width / 2, -1.5, f"{int(width)}", ha="center", fontsize=20)
+                plt.text(x + width / 2, -0.5, f"{int(width)}", ha="center", va="top", rotation=90, fontsize=20)
 
             if line_value is not None:
                 plt.axhline(y=line_value, color='red', linestyle='--', linewidth=2)
