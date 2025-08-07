@@ -653,12 +653,12 @@ def index():
             # Get y-axis limits to determine the bottom boundary
             y_min, y_max = plt.gca().get_ylim()
             # Adjustable offset to control line length
-            line_length_offset = 0.1  # Default offset; adjust this value
+            line_length_offset = 0.5  # Default offset; adjust this value
             bottom_boundary = y_min + line_length_offset  # Base position for text
 
             # Approximate text height based on fontsize (1 unit ≈ font size in points / 72, adjusted for rotation)
             text_height = 20 / 72  # Font size 20 pt converted to data units (approx.)
-            text_bottom_offset = 0.1  # Small offset to position text above the line end
+            text_bottom_offset = 1.5  # Small offset to position text above the line end
 
             # Add vertical lines at the center of each bar, ending at the bottom of the last digit
             for x, width in zip(x_positions, widths):
