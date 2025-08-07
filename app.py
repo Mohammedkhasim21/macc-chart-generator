@@ -653,7 +653,7 @@ def index():
             # Get y-axis limits to determine the bottom boundary
             y_min, y_max = plt.gca().get_ylim()
             # Adjustable offset to control line length
-            line_length_offset = 1.0  # Default offset; adjust this value
+            line_length_offset = 3.0  # Default offset; adjust this value
             bottom_boundary = y_min + line_length_offset  # Base position for text
 
             # Approximate text height based on fontsize (1 unit ≈ font size in points / 72, adjusted for rotation)
