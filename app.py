@@ -652,7 +652,7 @@ def index():
 
             # Get y-axis limits to determine the bottom boundary
             y_min, y_max = plt.gca().get_ylim()
-            bottom_boundary = y_min + 0.35  # Slightly above the bottom boundary
+            bottom_boundary = y_min + 0.1  # Slightly above the bottom boundary
 
             # Add vertical lines at the center of each bar
             for x, width in zip(x_positions, widths):
