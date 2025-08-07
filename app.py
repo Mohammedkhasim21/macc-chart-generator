@@ -656,12 +656,18 @@ def index():
             line_length_offset = 0.5  # Default offset; adjust this value
             bottom_boundary = y_min + line_length_offset  # Base position for text
 
-            # Add vertical lines at the center of each bar, ending above the text
+            # Approximate text height based on fontsize (1 unit ≈ font size in points / 72, adjusted for rotation)
+            text_height = 20 / 72  # Font size 20 pt converted to data units (approx.)
+            text_bottom_offset = 0.1  # Small offset to position text above the line end
+
+            # Add vertical lines at the center of each bar, ending at the bottom of the last digit
             for x, width in zip(x_positions, widths):
                 center_x = x + width / 2
-                plt.vlines(center_x, ymin=bottom_boundary + 0.2, ymax=0, colors='black', linestyles='solid', linewidth=1.5)
-                # Place numbers below the line's endpoint
-                plt.text(center_x, bottom_boundary + 0.1, f"{int(width)}", ha="center", va="bottom", rotation=90, fontsize=20)
+                # Line ends just below the text's bottom (at the last digit)
+                line_ymin = bottom_boundary + text_bottom_offset
+                plt.vlines(center_x, ymin=line_ymin, ymax=0, colors='black', linestyles='solid', linewidth=1.5)
+                # Place numbers with bottom alignment, starting just above the line
+                plt.text(center_x, line_ymin + text_height, f"{int(width)}", ha="center", va="bottom", rotation=90, fontsize=20)
 
             if line_value is not None:
                 plt.axhline(y=line_value, color='red', linestyle='--', linewidth=2)
