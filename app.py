@@ -650,15 +650,16 @@ def index():
             plt.xlabel("CO2 Abatement, Million Tonne", fontsize=20)
             plt.ylabel("MACC Values USD/Ton CO2", fontsize=20)
 
-            # Vertical numbers below x-axis
-            for x, width in zip(x_positions, widths):
-                plt.text(x + width / 2, -0.5, f"{int(width)}", ha="center", va="top", rotation=90, fontsize=20)
-
-            # Add vertical lines at bar edges
-            y_min, y_max = plt.gca().get_ylim()  # Get y-axis limits
+            # Get y-axis limits to determine the bottom boundary
+            y_min, y_max = plt.gca().get_ylim()
             bottom_boundary = y_min + 0.5  # Slightly above the bottom boundary
-            x_edges = list(x_positions) + [x_positions[-1] + widths[-1]]  # All bar edges
-            plt.vlines(x_edges, ymin=bottom_boundary, ymax=0, colors='black', linestyles='solid', linewidth=1.5)
+
+            # Add vertical lines at the center of each bar
+            for x, width in zip(x_positions, widths):
+                center_x = x + width / 2
+                plt.vlines(center_x, ymin=bottom_boundary, ymax=0, colors='black', linestyles='solid', linewidth=1.5)
+                # Place numbers at the bottom end of the vertical lines
+                plt.text(center_x, bottom_boundary + 0.1, f"{int(width)}", ha="center", va="bottom", rotation=90, fontsize=20)
 
             if line_value is not None:
                 plt.axhline(y=line_value, color='red', linestyle='--', linewidth=2)
