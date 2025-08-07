@@ -92,7 +92,7 @@ with app.app_context():
         db.session.commit()
         logging.info("Admin user created")
 
-# Templates (unchanged)
+# Templates
 AUTH_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -652,13 +652,15 @@ def index():
 
             # Get y-axis limits to determine the bottom boundary
             y_min, y_max = plt.gca().get_ylim()
-            bottom_boundary = y_min + 0.1  # Slightly above the bottom boundary
+            # Adjustable offset to control line length
+            line_length_offset = 0.5  # Default offset; adjust this value
+            bottom_boundary = y_min + line_length_offset  # Base position for text
 
-            # Add vertical lines at the center of each bar
+            # Add vertical lines at the center of each bar, ending above the text
             for x, width in zip(x_positions, widths):
                 center_x = x + width / 2
-                plt.vlines(center_x, ymin=bottom_boundary, ymax=0, colors='black', linestyles='solid', linewidth=1.5)
-                # Place numbers at the bottom end of the vertical lines
+                plt.vlines(center_x, ymin=bottom_boundary + 0.2, ymax=0, colors='black', linestyles='solid', linewidth=1.5)
+                # Place numbers below the line's endpoint
                 plt.text(center_x, bottom_boundary + 0.1, f"{int(width)}", ha="center", va="bottom", rotation=90, fontsize=20)
 
             if line_value is not None:
