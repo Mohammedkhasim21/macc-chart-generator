@@ -77,19 +77,17 @@ class User(db.Model):
 
 # Initialize database and create admin user
 with app.app_context():
-    # Create tables (handled by Flask-Migrate in production, but keep for local testing)
     db.create_all()
-    # Create admin user if not exists
     if not User.query.filter_by(email='admin@example.com').first():
         admin = User(
             email='admin@example.com',
-            quota=None,  # Set to None for unlimited quota
+            quota=None,
             approved=True,
             created_at=get_ist_time(),
             last_login=None,
             remember_token=None
         )
-        admin.set_password('password123')  # Secure password, consider changing
+        admin.set_password('password123')
         db.session.add(admin)
         db.session.commit()
         logging.info("Admin user created")
@@ -652,8 +650,15 @@ def index():
             plt.xlabel("CO2 Abatement, Million Tonne", fontsize=20)
             plt.ylabel("MACC Values USD/Ton CO2", fontsize=20)
 
+            # Vertical numbers below x-axis
             for x, width in zip(x_positions, widths):
                 plt.text(x + width / 2, -0.5, f"{int(width)}", ha="center", va="top", rotation=90, fontsize=20)
+
+            # Add vertical lines at bar edges
+            y_min, y_max = plt.gca().get_ylim()  # Get y-axis limits
+            bottom_boundary = y_min + 0.5  # Slightly above the bottom boundary
+            x_edges = list(x_positions) + [x_positions[-1] + widths[-1]]  # All bar edges
+            plt.vlines(x_edges, ymin=bottom_boundary, ymax=0, colors='black', linestyles='solid', linewidth=1.5)
 
             if line_value is not None:
                 plt.axhline(y=line_value, color='red', linestyle='--', linewidth=2)
