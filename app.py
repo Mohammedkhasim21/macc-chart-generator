@@ -853,7 +853,7 @@ def index():
             plt.close()
 
             if user.quota is not None and user.email != 'admin@example.com':
-                user.quota = max(0, user.quota - 2)
+                user.quota = max(0, user.quota - 1)
                 try:
                     db.session.commit()
                     logging.info(f"Quota decremented for {user.email}: new quota={user.quota}")
