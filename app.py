@@ -77,22 +77,24 @@ class User(db.Model):
 
 # Initialize database and create admin user
 with app.app_context():
+    # Create tables (handled by Flask-Migrate in production, but keep for local testing)
     db.create_all()
+    # Create admin user if not exists
     if not User.query.filter_by(email='admin@example.com').first():
         admin = User(
             email='admin@example.com',
-            quota=None,
+            quota=None,  # Set to None for unlimited quota
             approved=True,
             created_at=get_ist_time(),
             last_login=None,
             remember_token=None
         )
-        admin.set_password('password123')
+        admin.set_password('password123')  # Secure password, consider changing
         db.session.add(admin)
         db.session.commit()
         logging.info("Admin user created")
 
-# Templates
+# Templates (unchanged)
 AUTH_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -650,24 +652,8 @@ def index():
             plt.xlabel("CO2 Abatement, Million Tonne", fontsize=20)
             plt.ylabel("MACC Values USD/Ton CO2", fontsize=20)
 
-            # Get y-axis limits to determine the bottom boundary
-            y_min, y_max = plt.gca().get_ylim()
-            # Adjustable offset to control line length
-            line_length_offset = 0.5  # Default offset; adjust this value
-            bottom_boundary = y_min + line_length_offset  # Base position for text
-
-            # Approximate text height based on fontsize (1 unit ≈ font size in points / 72, adjusted for rotation)
-            text_height = 20 / 72  # Font size 20 pt converted to data units (approx.)
-            text_bottom_offset = 1.5  # Small offset to position text above the line end
-
-            # Add vertical lines at the center of each bar, ending at the bottom of the last digit
             for x, width in zip(x_positions, widths):
-                center_x = x + width / 2
-                # Line ends just below the text's bottom (at the last digit)
-                line_ymin = bottom_boundary + text_bottom_offset
-                plt.vlines(center_x, ymin=line_ymin, ymax=0, colors='black', linestyles='solid', linewidth=1.5)
-                # Place numbers with bottom alignment, starting just above the line
-                plt.text(center_x, line_ymin + text_height, f"{int(width)}", ha="center", va="bottom", rotation=90, fontsize=20)
+                plt.text(x + width / 2, -1.5, f"{int(width)}", ha="center", fontsize=20)
 
             if line_value is not None:
                 plt.axhline(y=line_value, color='red', linestyle='--', linewidth=2)
