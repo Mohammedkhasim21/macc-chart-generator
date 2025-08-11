@@ -539,6 +539,7 @@ def logout():
     response.delete_cookie('remember_token')
     logging.info("User logged out")
     return response
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     if "user" not in session:
@@ -638,33 +639,35 @@ def index():
             x_positions = np.cumsum([0] + widths[:-1])
             colors = ["#" + ''.join(random.choices('0123456789ABCDEF', k=6)) for _ in categories]
 
-            plt.figure(figsize=(35, 35))
+            plt.figure(figsize=(35,35))
             plt.bar(x_positions, values, width=widths, color=colors, edgecolor='black', align='edge')
 
             for x, y, w in zip(x_positions, values, widths):
-                plt.text(x + w / 2, y + (1 if y >= 0 else -1), str(y), ha='center', rotation=90, fontsize=20)
+                plt.text(x + w / 2, y + 1, str(y), ha='center', rotation=90, fontsize=20)
 
             plt.xticks(x_positions + np.array(widths) / 2, categories, ha="center", rotation=90, fontsize=20)
             plt.title(f"Marginal Abatement Cost Curve (MACC) - {project_name}", fontsize=24)
             plt.xlabel("CO2 Abatement, Million Tonne", fontsize=20)
             plt.ylabel("MACC Values USD/Ton CO2", fontsize=20)
 
-            # Get y-axis limits to determine boundaries
+            # Get y-axis limits to determine the bottom boundary
             y_min, y_max = plt.gca().get_ylim()
-            # Adjustable offset for text and line placement
-            text_offset = 1.5  # Small offset to position text below the x-axis
-            line_offset = 2.0  # Additional offset to ensure lines don't overlap text
-            text_height = 20 / 72  # Approximate text height (fontsize 20 pt converted to data units)
+            # Adjustable offset to control line length
+            line_length_offset = 0.5  # Default offset; adjust this value
+            bottom_boundary = y_min + line_length_offset  # Base position for text
 
-            # Add vertical lines and numbers for each bar
-            for x, y, width in zip(x_positions, values, widths):
+            # Approximate text height based on fontsize (1 unit ≈ font size in points / 72, adjusted for rotation)
+            text_height = 20 / 72  # Font size 20 pt converted to data units (approx.)
+            text_bottom_offset = 1.5  # Small offset to position text above the line end
+
+            # Add vertical lines at the center of each bar, ending at the bottom of the last digit
+            for x, width in zip(x_positions, widths):
                 center_x = x + width / 2
-                # Determine line starting point based on bar value (positive or negative)
-                line_ymin = y if y < 0 else 0  # Start at bottom of negative bars, or x-axis for positive
-                line_ymax = 0 if y < 0 else y_min - line_offset  # End at x-axis for negative, or below numbers for positive
-                plt.vlines(center_x, ymin=line_ymin, ymax=line_ymax, colors='black', linestyles='solid', linewidth=1.5)
-                # Place abatement value text below the x-axis, avoiding line overlap
-                plt.text(center_x, y_min - text_offset - text_height, f"{int(width)}", ha="center", va="top", rotation=90, fontsize=20)
+                # Line ends just below the text's bottom (at the last digit)
+                line_ymin = bottom_boundary + text_bottom_offset
+                plt.vlines(center_x, ymin=line_ymin, ymax=0, colors='black', linestyles='solid', linewidth=1.5)
+                # Place numbers with bottom alignment, starting just above the line
+                plt.text(center_x, line_ymin + text_height, f"{int(width)}", ha="center", va="bottom", rotation=90, fontsize=20)
 
             if line_value is not None:
                 plt.axhline(y=line_value, color='red', linestyle='--', linewidth=2)
@@ -676,7 +679,7 @@ def index():
 
             last_x = x_positions[-1]
             last_width = widths[-1]
-            plt.text(last_x + last_width / 2, y_min - 10, f"Total: {total_abatement:.1f}",
+            plt.text(last_x + last_width / 2, -10, f"Total: {total_abatement:.1f}",
                      ha='center', fontsize=20, color="black")
 
             buf = io.BytesIO()
@@ -701,6 +704,72 @@ def index():
 
     logging.debug(f"Rendering index page for {user.email}")
     return render_template_string(HTML_TEMPLATE, chart=chart, last_login=user.last_login)
+
+@app.route("/admin", methods=["GET", "POST"])
+def admin():
+    if session.get("user") != "admin@example.com":
+        logging.debug("Admin access attempt by non-admin, redirecting to login")
+        return redirect(url_for("login"))
+
+    message = ""
+    if request.method == "POST":
+        target_user_email = request.form["username"]
+        logging.debug(f"Admin action for {target_user_email}")
+        if not re.match(EMAIL_REGEX, target_user_email):
+            message = "Username must be a valid email address."
+            logging.error(f"Invalid email format in admin panel: {target_user_email}")
+        elif "approve" in request.form:
+            target_user = User.query.filter_by(email=target_user_email).first()
+            if target_user:
+                target_user.approved = True
+                try:
+                    db.session.commit()
+                    message = f"{target_user_email} approved."
+                    logging.info(f"User {target_user_email} approved")
+                except Exception as e:
+                    logging.error(f"Failed to approve {target_user_email}: {e}")
+                    db.session.rollback()
+                    message = "Internal server error."
+            else:
+                message = "User not found."
+                logging.warning(f"User {target_user_email} not found for approval")
+        elif "reset_password" in request.form:
+            target_user = User.query.filter_by(email=target_user_email).first()
+            if target_user:
+                new_password = secrets.token_urlsafe(12)
+                target_user.set_password(new_password)
+                try:
+                    db.session.commit()
+                    message = f"Password reset for {target_user_email}. New temporary password: {new_password}"
+                    logging.info(f"Password reset for {target_user_email}")
+                except Exception as e:
+                    logging.error(f"Failed to reset password for {target_user_email}: {e}")
+                    db.session.rollback()
+                    message = "Internal server error."
+            else:
+                message = "User not found."
+                logging.warning(f"User {target_user_email} not found for password reset")
+        else:
+            try:
+                new_quota = int(request.form["quota"])
+                target_user = User.query.filter_by(email=target_user_email).first()
+                if target_user:
+                    target_user.quota = new_quota
+                    try:
+                        db.session.commit()
+                        message = f"Quota updated for {target_user_email}"
+                        logging.info(f"Quota updated for {target_user_email}: {new_quota}")
+                    except Exception as e:
+                        logging.error(f"Failed to update quota for {target_user_email}: {e}")
+                        db.session.rollback()
+                        message = "Internal server error."
+                else:
+                    message = "User not found."
+                    logging.warning(f"User {target_user_email} not found for quota update")
+            except ValueError:
+                message = "Invalid quota input."
+                logging.error(f"Invalid quota input for {target_user_email}")
+
     users = User.query.all()
     logging.debug("Rendering admin panel")
     return render_template_string(ADMIN_TEMPLATE, users=users, message=message)
