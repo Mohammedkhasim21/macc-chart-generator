@@ -1,3 +1,4 @@
+# trunk-ignore-all(black)
 import os
 import secrets
 import logging
@@ -152,16 +153,28 @@ AUTH_TEMPLATE = """
       -moz-appearance: none;
       appearance: none;
     }
+    @media (max-width: 640px) {
+      .auth-form {
+        padding: 1rem;
+      }
+      h2 {
+        font-size: 1.5rem;
+      }
+      input, button {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-gray-100 flex flex-col">
   <header class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md">
-    <div class="container mx-auto px-4 py-4">
-      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-center">MACC Chart Generator</h1>
+    <div class="container mx-auto px-4 py-4 text-center">
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight">MACC Chart Generator</h1>
     </div>
   </header>
   <main class="flex-grow container mx-auto px-4 py-8">
-    <div class="bg-white shadow-lg rounded-xl p-6 fade-in w-full max-w-md mx-auto">
+    <div class="bg-white shadow-lg rounded-xl p-6 fade-in auth-form max-w-md mx-auto w-full">
       <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 text-center mb-6">{{ title }}</h2>
       <form method="POST" class="space-y-4">
         <div>
@@ -252,6 +265,10 @@ HTML_TEMPLATE = """
       right: 10px;
       font-size: 0.75rem;
     }
+    .chart-container img {
+      max-width: 100%;
+      height: auto;
+    }
     @media (max-width: 640px) {
       .username-display {
         top: 60px;
@@ -259,11 +276,21 @@ HTML_TEMPLATE = """
         font-size: 0.7rem;
         padding: 0.4rem 0.8rem;
       }
+      h2 {
+        font-size: 1.5rem;
+      }
+      input, button {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+      }
+      .chart-container {
+        padding: 0.5rem;
+      }
     }
-    input, button {
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      appearance: none;
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .chart-container img {
+        max-height: 400px;
+      }
     }
   </style>
 </head>
@@ -317,7 +344,7 @@ HTML_TEMPLATE = """
         </div>
       </form>
       {% if chart %}
-        <div class="mt-8">
+        <div class="mt-8 chart-container">
           <h3 class="text-lg font-semibold text-gray-800 text-center mb-4">Generated Chart</h3>
           <div class="bg-gray-50 p-4 rounded-lg shadow-inner max-w-6xl mx-auto">
             <img src="data:image/png;base64,{{ chart }}" alt="MACC Chart" class="w-full h-auto mx-auto rounded-lg shadow-md hover-scale">
@@ -382,6 +409,19 @@ ADMIN_TEMPLATE = """
       -moz-appearance: none;
       appearance: none;
     }
+    @media (max-width: 640px) {
+      h2 {
+        font-size: 1.5rem;
+      }
+      input, button {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+      }
+      .user-list li {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen bg-gray-100 flex flex-col">
@@ -423,7 +463,7 @@ ADMIN_TEMPLATE = """
       </form>
       <p class="text-center text-green-600 mt-4 text-sm font-semibold">{{ message }}</p>
       <h3 class="text-lg font-semibold text-gray-800 text-center mt-6 mb-4">Current Users</h3>
-      <ul class="space-y-2">
+      <ul class="space-y-2 user-list">
         {% for user in users %}
           <li class="bg-gray-50 p-3 rounded-lg shadow-sm text-sm">
             <span class="font-medium">{{ user.email }}</span> - 
@@ -636,6 +676,17 @@ def index():
     .logout-button:hover {
       background-color: #c82333;
     }
+    @media (max-width: 640px) {
+      .card {
+        padding: 1rem;
+      }
+      h2 {
+        font-size: 1.2rem;
+      }
+      p, .logout-button {
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -669,41 +720,53 @@ def index():
                 logging.error(f"Input mismatch for {user.email}: categories={len(categories)}, values={len(values)}, widths={len(widths)}")
                 return "Error: Mismatched lengths of inputs."
 
+            y_max = max(values) if values else 0
+            y_min = min(values) if values else 0
+            y_abs_max = max([abs(v) for v in values]) if values else 0
+            small_offset = y_abs_max * 0.05 if y_abs_max > 0 else 1
+            small_text = y_abs_max * 0.02 if y_abs_max > 0 else 1
+            label_y = y_min - small_offset if y_min < 0 else -small_offset
+            line_end_y = label_y + small_offset * 0.4
+            total_y = label_y - small_offset * 0.5
+
             total_abatement = sum(widths)
             x_positions = np.cumsum([0] + widths[:-1])
             colors = ["#" + ''.join(random.choices('0123456789ABCDEF', k=6)) for _ in categories]
 
-            # Chart generation
-            plt.figure(figsize=(35, 25))
+            # Responsive chart size based on data range
+            fig_width = max(10, min(35, len(categories) * 2))  # Adjust width based on number of categories
+            fig_height = 15
+            plt.figure(figsize=(fig_width, fig_height))
+
             plt.bar(x_positions, values, width=widths, color=colors, edgecolor='black', align='edge')
 
-            # Add value labels above/below bars
+            # Add value labels: aligned directly on x-axis with 0.1 gap for positive
             for x, y, w in zip(x_positions, values, widths):
-                plt.text(x + w / 2, y + (max(values)*0.02 if max(values)>0 else 1),
-                         f"{y}", ha='center', rotation=90, fontsize=12)
+                if y >= 0:
+                    text_y = 0.9 # 0.1 gap above x-axis
+                    plt.text(x + w / 2, text_y, f"{y}", ha='center', va='bottom', rotation=90, fontsize=12)
+                else:
+                    text_y = 0  # Directly on x-axis, below
+                    plt.text(x + w / 2, text_y, f"{y}", ha='center', va='top', rotation=90, fontsize=12)
 
             # Add vertical lines below x-axis numbers
             for x, y, w in zip(x_positions, values, widths):
                 if y >= 0:
-                    line_start_y = 0  # Start at x-axis for positive bars
+                    line_start_y = 0
                 else:
-                    line_start_y = y  # Start at bottom of negative bars
-                # Extend lines downward, stopping before labels
-                line_end_y = -max(values)*0.03 if max(values)>0 else -abs(min(values))*0.03
-                if y < 0:
-                    line_end_y = -abs(min(values))*1.1  # Extend further down for negative bars
-                plt.vlines(x + w / 2, line_start_y, line_end_y,
-                           colors='black', linestyles='dashed', linewidth=1)
+                    line_start_y = y
+                plt.vlines(x + w / 2, line_start_y, line_end_y, colors='black', linestyles='dashed', linewidth=1)
 
             plt.xticks(x_positions + np.array(widths) / 2, categories, ha="center", rotation=90, fontsize=12)
             plt.title(f"Marginal Abatement Cost Curve (MACC) - {project_name}", fontsize=18)
             plt.xlabel("CO2 Abatement, Million Tonne", fontsize=14)
             plt.ylabel("MACC Values USD/Ton CO2", fontsize=14)
 
-            # Add CO2 abatement values below x-axis (vertically)
-            for x, width in zip(x_positions, widths):
-                plt.text(x + width / 2, - (max(values)*0.06 if max(values)>0 else abs(min(values))*0.06),
-                         f"{int(width)}", ha="center", rotation=90, fontsize=12)
+            # Add CO2 abatement values below the lines, moved up slightly
+            for i, (x, width) in enumerate(zip(x_positions, widths)):
+                stagger = (i % 2) * small_offset * 0.5  # Alternate offset for even/odd indices
+                new_y = line_end_y - (small_offset * 0.5) - (stagger * 0.5)
+                plt.text(x + width / 2, new_y, f"{int(width)}", ha="center", rotation=90, fontsize=12)
 
             # Add internal carbon price line if provided
             if line_value is not None:
@@ -712,13 +775,12 @@ def index():
                          f"Internal carbon price {line_value}", color='black', fontsize=12, ha='left')
 
             plt.tick_params(axis='y', labelsize=12)
+            plt.ylim(y_min - small_offset * 2, y_max + small_offset)
             plt.subplots_adjust(bottom=0.45, right=0.95)
 
-            # Add total abatement text
-            last_x = x_positions[-1]
-            last_width = widths[-1]
-            plt.text(last_x + last_width / 2, - (max(values)*0.12 if max(values)>0 else abs(min(values))*0.12),
-                     f"Total: {total_abatement:.1f}", ha='center', fontsize=12, color="black")
+            # Add total abatement text, shifted right
+            last_x = x_positions[-1] + widths[-1]
+            plt.text(last_x + small_offset, total_y, f"Total: {total_abatement:.1f}", ha='left', fontsize=12, color="black")
 
             # Save chart to buffer
             buf = io.BytesIO()
